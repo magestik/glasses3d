@@ -1,5 +1,5 @@
-obj-m := glasses3d.o
-glasses3d-objs := usb_module.o nv3dvision.o
+obj-m := module3d.o
+module3d-objs := glasses3d.o sync.o usb.o
 
 KDIR := /lib/modules/$(shell uname -r)/build
 PWD := $(shell pwd)
