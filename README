@@ -1,0 +1,10 @@
+glasses3d will be able to communicate through:
+- USB,
+- DDC,
+- Bluetooth (???).
+
+Supported glasses will be:
+- Nvidia 3D Vision [USB & DDC],
+- Some bluetooth glasses (???).
+
+Many glasses can be handled in th same time. For example an Nvidia USB emitter with 2 Bluetooth glasses.

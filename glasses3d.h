@@ -4,10 +4,6 @@
 
 #define MAX_DEVICES 16
 
-/* GLOBALS */
-extern int current_eye;
-extern int inversed;
-
 typedef struct {
 	int eye;
 	int inversed;
@@ -18,8 +14,14 @@ typedef struct {
 	void (*swap_eyes)(state3d_t);
 } dev3d_t;
 
+/* GLOBALS */
+extern int current_eye;
+extern int refresh_rate;
+
 extern dev3d_t devices_list[MAX_DEVICES];
 extern int devices_count;
+
+void glasses3d_swap(void);
 
 
 

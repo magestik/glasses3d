@@ -1,40 +1,50 @@
+#include "glasses3d.h"
+
 #include <linux/kernel.h>
 #include <linux/errno.h>
 #include <linux/init.h>
 #include <linux/slab.h>
 #include <linux/module.h>
 
-#include "glasses3d.h"
 #include "sync.h"
-
 #include "usb.h"
 
 /* GLOBALS */
 int current_eye = 0;
-int inversed = 0;
+int refresh_rate = 120;
 
 dev3d_t devices_list[MAX_DEVICES];
 int devices_count = 0;
 
+void glasses3d_swap() {
+	usb_swap();
+	
+	// TODO quickly
+	//ddc_swap();
+	
+	// TODO ???
+	//bluetooth_swap();
+}
+
 /* On Load */
-int __init glasses3d_init(void)
-{
+int __init glasses3d_init(void) {
 	
 	sync_init();
 	
-	// init_usb_control()
-
+	usb_init();
+	//ddc_init();
+	
 	printk(KERN_INFO "%s succefully loaded\n", DRIVER_NAME);
 	return 0;
 }
 
 /* On Unload */
-void __exit glasses3d_exit(void)
-{
+void __exit glasses3d_exit(void) {
 	
 	sync_stop();
 	
-	// stop_usb_control()
+	usb_stop();
+	//ddc_stop();
 	
 	printk(KERN_INFO "%s succefully unloaded\n", DRIVER_NAME);	
 }

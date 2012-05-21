@@ -1,9 +1,11 @@
+#include "ddc.h"
+
 #include "glasses3d.h"
 #include "sync.h"
 
-#include "ddc.h"
-
 // DDC is specific I2C
+
+// TODO: implement http://code.google.com/p/a3dcontrol/source/browse/src/a3dcontrol.c
 
 /* KERNEL MODULE */
 static struct i2c_device_id id_table [] = {
@@ -23,24 +25,26 @@ static struct i2c_driver i2c_driver = {
 	.probe		= i2c_probe,
 	.remove		= i2c_remove,		
 	.id_table	= id_table,
-
-	/* if device autodetection is needed: */
-	.class		= I2C_CLASS_SOMETHING,
-	.detect		= foo_detect,
-	.address_list	= normal_i2c
+	.class		= I2C_CLASS_DDC
 }
 
+/* On Module Load */
 int ddc_init() {
+	
+	return 0;
 }
 
+/* On Module Unload */
 void ddc_stop() {
+	
 }
 
-
-int i2c_probe()
-{
+/* DDC plug */
+int i2c_probe() {
+	
 }
 
-void i2c_remove()
-{
+/* DDC unplug */
+void i2c_disconnect() {
+	
 }
