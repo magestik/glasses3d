@@ -13,6 +13,7 @@ typedef struct {
 } dev3d_t;
 
 /* GLOBALS */
+extern int inversed;
 extern int current_eye;
 extern int refresh_rate;
 

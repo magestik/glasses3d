@@ -10,6 +10,7 @@
 #include "usb.h"
 
 /* GLOBALS */
+int inversed = 0;
 int current_eye = 0;
 int refresh_rate = 120;
 

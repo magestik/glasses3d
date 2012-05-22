@@ -119,7 +119,7 @@ int usb_probe(struct usb_interface *interface, const struct usb_device_id *id) {
 
 	usb_add_element(interface); // liste chainée
 	
-	//dev_info(&interface->dev, "USB glasses now attached\n");
+	dev_info(&interface->dev, "USB glasses now attached\n");
 	return 0;
 }
 
@@ -135,5 +135,5 @@ void usb_disconnect(struct usb_interface *interface) {
 	
 	kfree(dev);
 
-	//dev_info(&interface->dev, "USB glasses now disconnected\n");
+	dev_info(&interface->dev, "USB glasses now disconnected\n");
 }

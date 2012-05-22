@@ -6,6 +6,7 @@ PWD := $(shell pwd)
 
 all:
 	$(MAKE) -C $(KDIR) SUBDIRS=$(PWD) modules
+	mv module3d.ko glasses3d.ko
 
 clean:
 	$(MAKE) -C $(KDIR) SUBDIRS=$(PWD) clean

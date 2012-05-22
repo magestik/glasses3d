@@ -47,7 +47,7 @@ static ctl_table test_table[] = {
 		.extra1		= &min,
 		.extra2		= &max
 	},
-	/*{
+	{
 		.procname	= "inversed",
 		.data		= &inversed,
 		.maxlen		= sizeof(int),
@@ -55,7 +55,7 @@ static ctl_table test_table[] = {
 		.proc_handler	= &proc_dointvec_minmax,
 		.extra1     = &min,
 		.extra2     = &max
-	},*/
+	},
 	{ }
 };
 

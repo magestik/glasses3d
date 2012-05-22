@@ -44,18 +44,19 @@ int nv3d_init(struct usb_interface *interface) {
 	struct usb_glasses *dev;
 	dev = usb_get_intfdata (interface);
 	
-	if(interface->cur_altsetting->desc.bNumEndpoints == 0) {
-		//printk(KERN_NOTICE "0 Endpoint: must upload nvidia emitter firmware\n");
-		dev->active = (nv3d_load_firmware(dev->udev) == 0); // Upload the firmware to the USB device
-	} else {
-		//printk(KERN_NOTICE "%d Endpoints\n", interface->cur_altsetting->desc.bNumEndpoints);
-		dev->active = 1; // glasses are active
-		nv3d_set_rate(dev->udev, refresh_rate);
-	}
-
+	dev->active = 0;
 	dev->swap_eyes = nv3d_swap; // swap function
 	dev->inversed = 0; // eyes are not inversed
+		
+	if(interface->cur_altsetting->desc.bNumEndpoints == 0 ) {
+		if( nv3d_load_firmware(dev->udev) != 0 ){ // Upload the firmware to the USB device
+			return -1;
+		}
+	}
 	
+	dev->active = 1;
+	nv3d_set_rate(dev->udev, refresh_rate);
+
 	return 0;
 }
 
@@ -161,6 +162,57 @@ int nv3d_set_rate(struct usb_device *udev, int rate) {
 	return rate;
 }
 
+void nvstusb_keys(struct usb_device *udev) {
+	int e, actual_length;
+	
+	uint8_t readBuf[7];
+	
+	uint8_t cmd1[] = {
+		NVSTUSB_CMD_READ | NVSTUSB_CMD_CLEAR, /* read and clear data */
+		0x18, /* from address 0x201F (0x2007+0x18) = status? */
+		0x03, 0x00 /* read/clear 3 bytes */
+	};
+	
+	e = usb_bulk_msg(udev, usb_sndbulkpipe(udev, 2), cmd1, sizeof(cmd1), &actual_length, 0);
+
+	// read
+	e = usb_bulk_msg(udev, usb_rcvbulkpipe(udev, 4), readBuf, sizeof(readBuf), &actual_length, 0);
+	
+	
+	/*
+	 * readBuf[0] contains the offset (0x18),
+	 * readBuf[1] contains the number of read bytes (0x03),
+	 * readBuf[2] (msb) and readBuf[3] (lsb) of the bytes sent (sizeof(cmd1))
+	 * readBuf[4] and following contain the requested data
+	 */
+
+	/* from address 0x201F:
+	 * signed 8 bit integer: amount the wheel was turned without the button pressed
+	 */
+	
+	if(readBuf[4] != 0){
+		printk(KERN_INFO "delta wheel = %d \n", readBuf[4]);
+	}
+	
+	/* from address 0x2020:
+	 * signed 8 bit integer: amount the wheel was turned with the button pressed
+	 */
+	
+	if(readBuf[5] != 0){
+		printk(KERN_INFO "delta wheel (pressed) = %d \n", readBuf[5]);
+	}
+	
+	/* from address 0x2021:
+	 * bit 0: front button was pressed since last time (presumably fom pin 4 on port C)
+	 * bit 1: logic state of pin 7 on port E
+	 * bit 2: logic state of pin 2 on port C
+	 */
+	 
+	if(readBuf[6] & 0x01 != 0){
+		printk(KERN_INFO "toggled 3D = %d \n", readBuf[6] & 0x01);
+	}
+}
+
 /*
  * Swap glasses eyes
  */
@@ -233,6 +285,8 @@ int nv3d_load_firmware(struct usb_device *udev) {
 	}	
 	
 	release_firmware(fw);
+	
+	usb_reset_device(udev);
 	
 	return 0;
 }

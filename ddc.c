@@ -10,11 +10,10 @@
 /* KERNEL MODULE */
 static struct i2c_device_id id_table [] = {
 	{ "foo", my_id_for_foo },
-	{ "bar", my_id_for_bar },
 	{ }
 };
 
-MODULE_DEVICE_TABLE(i2c, foo_idtable);
+MODULE_DEVICE_TABLE(i2c, id_table);
 
 /* I2C */
 static struct i2c_driver i2c_driver = {
@@ -22,29 +21,28 @@ static struct i2c_driver i2c_driver = {
 		.name	= DRIVER_NAME,
 	},
 	
-	.probe		= i2c_probe,
-	.remove		= i2c_remove,		
+	.probe		= ddc_probe,
+	.remove		= ddc_remove,		
 	.id_table	= id_table,
 	.class		= I2C_CLASS_DDC
 }
 
 /* On Module Load */
 int ddc_init() {
-	
-	return 0;
+	return i2c_add_driver(&i2c_driver);
 }
 
 /* On Module Unload */
 void ddc_stop() {
-	
+	i2c_del_driver(&i2c_driver);
 }
 
 /* DDC plug */
-int i2c_probe() {
+int ddc_probe(struct i2c_client *client, const struct i2c_device_id *idp){
 	
 }
 
 /* DDC unplug */
-void i2c_disconnect() {
+void ddc_remove() {
 	
 }
