@@ -13,9 +13,6 @@
 int current_eye = 0;
 int refresh_rate = 120;
 
-dev3d_t devices_list[MAX_DEVICES];
-int devices_count = 0;
-
 void glasses3d_swap() {
 	usb_swap();
 	

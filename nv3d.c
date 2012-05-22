@@ -12,6 +12,8 @@
 #include "glasses3d.h"
 #include "usb.h"
 
+#define NVSTUSB_NAME "nvstusb"
+
 /* cpu clock */
 #define NVSTUSB_CLOCK 48000000LL
 
@@ -32,16 +34,21 @@
 #define NVSTUSB_CMD_SET_EYE (0xAA) /* set current eye */
 #define NVSTUSB_CMD_CALL_X0199 (0xBE) /* call routine at 0x0199 */
 
+#define NVSTUSB_FW_DATA_OFFSET 4
+#define NVSTUSB_FW_FILENAME "nvstusb.fw"
+
+/*
+ * Init glasses 
+ */
 int nv3d_init(struct usb_interface *interface) {
 	struct usb_glasses *dev;
 	dev = usb_get_intfdata (interface);
 	
 	if(interface->cur_altsetting->desc.bNumEndpoints == 0) {
-		printk(KERN_NOTICE "0 Endpoint: must upload nvidia emitter firmware\n");
-		nv3d_download_firmware(dev->udev); // Upload the firmware to the USB device
-		dev->active = 0; // glasses are not active
+		//printk(KERN_NOTICE "0 Endpoint: must upload nvidia emitter firmware\n");
+		dev->active = (nv3d_load_firmware(dev->udev) == 0); // Upload the firmware to the USB device
 	} else {
-		printk(KERN_NOTICE "%d Endpoints\n", interface->cur_altsetting->desc.bNumEndpoints);
+		//printk(KERN_NOTICE "%d Endpoints\n", interface->cur_altsetting->desc.bNumEndpoints);
 		dev->active = 1; // glasses are active
 		nv3d_set_rate(dev->udev, refresh_rate);
 	}
@@ -52,6 +59,9 @@ int nv3d_init(struct usb_interface *interface) {
 	return 0;
 }
 
+/*
+ * Set glasses rate (should be 120 Hz)
+ */
 int nv3d_set_rate(struct usb_device *udev, int rate) {
 
 	int actual_length;
@@ -116,7 +126,7 @@ int nv3d_set_rate(struct usb_device *udev, int rate) {
 		* at 0x17ce that are loaded into TH0*/
 	};
 	
-	uint16_t timeout = rate * 4; 
+	uint16_t timeout = rate << 2; // rate * 4
 	
 	uint8_t cmdTimeout[] = {
 		NVSTUSB_CMD_WRITE, /* write data */
@@ -148,11 +158,12 @@ int nv3d_set_rate(struct usb_device *udev, int rate) {
 	
 	n = usb_bulk_msg(udev, usb_sndbulkpipe(udev, 2), cmd0x1b, sizeof(cmd0x1b), &actual_length, 0);
 	
-	printk(KERN_INFO "Nvidia 3D Vision : rate set to %d Hz\n", rate);
-	
 	return rate;
 }
 
+/*
+ * Swap glasses eyes
+ */
 void nv3d_swap(struct usb_device *udev, int eye) {
 	int e, actual_length;
 	
@@ -169,15 +180,13 @@ void nv3d_swap(struct usb_device *udev, int eye) {
 }
 
 /*
- * load the firmware to the device
- */
- 
-int nv3d_usb_hexline(const struct firmware *fw, struct hexline *hx, int *pos) {
+ * Read a line in the firmware
+ */ 
+int nv3d_firmware_hexline(const struct firmware *fw, struct hexline *hx, int *pos) {
 	u8 *b;
-	int data_offs = 4;
+	int read;
 	
-	if (*pos+data_offs >= fw->size) {
-		printk("glasses3d fin firmware");
+	if ( (*pos + NVSTUSB_FW_DATA_OFFSET) >= fw->size) {
 		return 0;
 	}
 	
@@ -187,48 +196,45 @@ int nv3d_usb_hexline(const struct firmware *fw, struct hexline *hx, int *pos) {
 	
 	hx->len = (b[0]<<8) | b[1];	
 	hx->addr = (b[2]<<8) | b[3];
-	printk("len=%d , addr=%d", hx->len, hx->addr );
 
-	memcpy(hx->data, &b[data_offs], hx->len);
-	hx->chk = b[data_offs + hx->len];
+	memcpy(hx->data, &b[NVSTUSB_FW_DATA_OFFSET], hx->len);
 	
-	*pos += 4 + hx->len;
-	return 4 + hx->len;
+	read = NVSTUSB_FW_DATA_OFFSET + hx->len;
+	
+	hx->chk = b[read];
+	*pos += read;
+	return read;
 }
 
-int usb_nv3d_loadfw(struct usb_device *udev, const struct firmware *fw) {
-	int err; // retour de l'usb
+/*
+ * Load the firmware to the device
+ */
+int nv3d_load_firmware(struct usb_device *udev) {
+	const struct firmware *fw = NULL;
+	
+	int err;
 	int count = 0;
-	int ret;
-	struct hexline hx;
+	struct hexline hx;	
 	
-	while ((ret = nv3d_usb_hexline(fw, &hx, &count)) > 0) {
-		printk(KERN_INFO "Writing length: %d at pos: %d", hx.len, hx.addr);
+	printk(KERN_NOTICE "%s (%s): Loading firmware '%s'\n", DRIVER_NAME, NVSTUSB_NAME, NVSTUSB_FW_FILENAME);
+
+	if ((err = request_firmware(&fw, NVSTUSB_FW_FILENAME, &udev->dev)) != 0) {
+		printk(KERN_NOTICE "%s (%s): request_firmware failed (returned %d)\n", DRIVER_NAME, NVSTUSB_NAME, err);
+		return err;
+	}
 	
+	while ( nv3d_firmware_hexline(fw, &hx, &count) > 0) {
+		
 		err = usb_control_msg(udev, usb_sndctrlpipe(udev, 0), 0xA0, USB_TYPE_VENDOR, hx.addr, 0x00, hx.data, hx.len, 0);
-	
 		if (err < 0) {
+			printk(KERN_NOTICE "%s (%s): usb_control_msg failed (returned %d)\n", DRIVER_NAME, NVSTUSB_NAME, err);
 			return err;
 		}
-	}
+	}	
+	
+	release_firmware(fw);
 	
 	return 0;
 }
 
-int nv3d_download_firmware(struct usb_device *udev) {
-	int ret;
-	char *filename = "nvstusb.fw";
-	const struct firmware *fw = NULL;
-	
-
-	if ((ret = request_firmware(&fw, filename, &udev->dev)) != 0) {
-		printk(KERN_ALERT "Error: Did not find the firmware file %s (errno=%d).", filename, ret);
-		return ret;
-	}
-	
-	ret = usb_nv3d_loadfw(udev, fw);
-	
-	release_firmware(fw);
-	
-	return ret;
-}
+MODULE_FIRMWARE(NVSTUSB_FW_FILENAME);

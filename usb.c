@@ -34,7 +34,7 @@ void usb_add_element(struct usb_interface *interface) {
 	newElement->interface = interface;
 	newElement->next = attached_usb_devices;
 	attached_usb_devices = newElement;
-	printk(KERN_INFO "Add to list");
+	//printk(KERN_INFO "Add to list");
 }
 
 /* Remove an element from the list */
@@ -46,7 +46,7 @@ void usb_remove_element(struct usb_glasses *del) {
 	dev = usb_get_intfdata (currentElement->interface);
 	if( dev == del ) {
 		attached_usb_devices = currentElement->next;
-		printk(KERN_INFO "Remove from list");
+		//printk(KERN_INFO "Remove from list");
 	}
 	
 	while(currentElement->next != NULL) {
@@ -55,7 +55,7 @@ void usb_remove_element(struct usb_glasses *del) {
 			next = currentElement->next->next;
 			currentElement->next = currentElement->next->next;
 			kfree(next);
-			printk(KERN_INFO "Remove from list");
+			//printk(KERN_INFO "Remove from list");
 		}
 		
 		currentElement = currentElement->next;
@@ -80,14 +80,14 @@ void usb_swap(void) {
 
 /* On Module Load */
 int usb_init() {
-	int retval = 0;
+	int err = 0;
 	attached_usb_devices = NULL;
-	retval = usb_register(&usb_driver);
-	if (retval) {
-		printk(KERN_ALERT "Error: usb_register failed (errno=%d)", retval);
+	err = usb_register(&usb_driver);
+	if (err) {
+		printk(KERN_NOTICE "%s: usb_register failed (returned %d)\n", DRIVER_NAME, err);
 	}
 
-	return retval;
+	return err;
 }
 
 /* On Module Unload */
@@ -105,6 +105,7 @@ int usb_probe(struct usb_interface *interface, const struct usb_device_id *id) {
 		dev_err(&interface->dev, "Out of memory\n");
 		return -ENOMEM;
 	}
+	
 	memset (dev, 0x00, sizeof (*dev));
 	
 	dev->udev = usb_get_dev(udev);
@@ -118,7 +119,7 @@ int usb_probe(struct usb_interface *interface, const struct usb_device_id *id) {
 
 	usb_add_element(interface); // liste chainée
 	
-	dev_info(&interface->dev, "USB glasses now attached\n");
+	//dev_info(&interface->dev, "USB glasses now attached\n");
 	return 0;
 }
 
@@ -134,5 +135,5 @@ void usb_disconnect(struct usb_interface *interface) {
 	
 	kfree(dev);
 
-	dev_info(&interface->dev, "USB glasses now disconnected\n");
+	//dev_info(&interface->dev, "USB glasses now disconnected\n");
 }

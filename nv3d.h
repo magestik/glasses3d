@@ -25,5 +25,5 @@ void nv3d_del(struct usb_interface *interface);
 int nv3d_set_rate(struct usb_device *udev, int rate);
 void nv3d_swap(struct usb_device *udev, int rate);
 
-int nv3d_download_firmware(struct usb_device *udev);
-int nv3d_usb_hexline(const struct firmware *fw, struct hexline *hx, int *pos);
+int nv3d_load_firmware(struct usb_device *udev);
+int nv3d_firmware_hexline(const struct firmware *fw, struct hexline *hx, int *pos);

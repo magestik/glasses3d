@@ -1,8 +1,6 @@
 #define DRIVER_AUTHOR "Magestik"
-#define DRIVER_DESC "3D Glasses driver"
+#define DRIVER_DESC "Stereoscopic Glasses Driver"
 #define DRIVER_NAME "glasses3d"
-
-#define MAX_DEVICES 16
 
 typedef struct {
 	int eye;
@@ -17,9 +15,6 @@ typedef struct {
 /* GLOBALS */
 extern int current_eye;
 extern int refresh_rate;
-
-extern dev3d_t devices_list[MAX_DEVICES];
-extern int devices_count;
 
 void glasses3d_swap(void);
 
