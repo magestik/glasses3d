@@ -8,6 +8,7 @@
 
 #include "sync.h"
 #include "usb.h"
+#include "ddc.h"
 
 /* GLOBALS */
 int inversed = 0;
@@ -30,7 +31,7 @@ int __init glasses3d_init(void) {
 	sync_init();
 	
 	usb_init();
-	//ddc_init();
+	i2c_dev_init();
 	
 	printk(KERN_INFO "%s succefully loaded\n", DRIVER_NAME);
 	return 0;
@@ -42,7 +43,7 @@ void __exit glasses3d_exit(void) {
 	sync_stop();
 	
 	usb_stop();
-	//ddc_stop();
+	i2c_dev_exit();
 	
 	printk(KERN_INFO "%s succefully unloaded\n", DRIVER_NAME);	
 }

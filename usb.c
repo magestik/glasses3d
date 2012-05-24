@@ -28,6 +28,8 @@ struct usb_driver usb_driver = {
 
 usb_list attached_usb_devices;
 
+//TODO use <linux/list.h>
+
 /* Add an element to the list */
 void usb_add_element(struct usb_interface *interface) {
 	struct usb_list_element *newElement = kmalloc(sizeof(struct usb_list_element), GFP_KERNEL);

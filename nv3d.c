@@ -190,7 +190,7 @@ void nvstusb_keys(struct usb_device *udev) {
 	 * signed 8 bit integer: amount the wheel was turned without the button pressed
 	 */
 	
-	if(readBuf[4] != 0){
+	if(readBuf[4]){
 		printk(KERN_INFO "delta wheel = %d \n", readBuf[4]);
 	}
 	
@@ -198,7 +198,7 @@ void nvstusb_keys(struct usb_device *udev) {
 	 * signed 8 bit integer: amount the wheel was turned with the button pressed
 	 */
 	
-	if(readBuf[5] != 0){
+	if(readBuf[5]){
 		printk(KERN_INFO "delta wheel (pressed) = %d \n", readBuf[5]);
 	}
 	
@@ -208,7 +208,7 @@ void nvstusb_keys(struct usb_device *udev) {
 	 * bit 2: logic state of pin 2 on port C
 	 */
 	 
-	if(readBuf[6] & 0x01 != 0){
+	if(readBuf[6] & 0x01){
 		printk(KERN_INFO "toggled 3D = %d \n", readBuf[6] & 0x01);
 	}
 }
