@@ -1,8 +1,9 @@
 #include <linux/usb.h>
 
 /* NVIDIA 3D VISION */
-#define NV3D_VENDOR_ID	0x0955
-#define NV3D_PRODUCT_ID	0x0007
+#define NVIDIA_VENDOR_ID	0x0955
+#define NV3D_PRODUCT_ID_1	0x0007 // version 1
+#define NV3D_PRODUCT_ID_2	0x7002 // laptop internal
 
 extern struct usb_driver usb_driver;
 

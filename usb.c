@@ -12,7 +12,8 @@
 #include "nv3d.h"
 
 const struct usb_device_id id_table [] = {
-	{ USB_DEVICE(NV3D_VENDOR_ID, NV3D_PRODUCT_ID) }, // NVIDIA 3D VISION (v1)
+	{ USB_DEVICE(NVIDIA_VENDOR_ID, NV3D_PRODUCT_ID_1) }, // external usb kit (v1)
+	{ USB_DEVICE(NVIDIA_VENDOR_ID, NV3D_PRODUCT_ID_2) }, // internal laptop kit
 	{ },
 };
 
