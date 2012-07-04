@@ -114,8 +114,12 @@ int usb_probe(struct usb_interface *interface, const struct usb_device_id *id) {
 	dev->udev = usb_get_dev(udev);
 	usb_set_intfdata (interface, dev);
 
-	if (udev->descriptor.idVendor == NV3D_VENDOR_ID && udev->descriptor.idProduct == NV3D_PRODUCT_ID) {
-		nv3d_init(interface);
+	if ( udev->descriptor.idVendor == NVIDIA_VENDOR_ID ) {
+		if(udev->descriptor.idProduct == NV3D_PRODUCT_ID_1 || udev->descriptor.idProduct == NV3D_PRODUCT_ID_2) {
+			nv3d_init(interface);
+		} else {
+			return -ENODEV;
+		}
 	} else {
 		return -ENODEV;
 	}
